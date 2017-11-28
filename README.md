@@ -8,3 +8,4 @@ https://drive.google.com/drive/folders/1ZDmKrUpRWcj7__CQFEOFOr33GICM7Ltw?usp=sha
 
 # comments
 1) nazwy zmiennych wchodzących do modelu oznaczamy prefixem MODEL dzięki czemu łatwo je automatycznie wyłapywać
+2) żeby kod działał u nas wszystkich, każde z nas powinno mieć u siebie folder "C:/kaggle_mercari" i w nim trzymać dane
