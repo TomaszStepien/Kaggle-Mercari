@@ -3,6 +3,7 @@ import numpy as np
 import os
 from datetime import datetime
 
+
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.linear_model import SGDRegressor
@@ -12,12 +13,12 @@ from sklearn.linear_model import SGDRegressor
 
 
 def error(actual, prediction):
-    '''calculates Root Mean Squared Logarithmic Error given 2 vectors'''
+    """calculates Root Mean Squared Logarithmic Error given 2 vectors"""
     return np.sqrt(np.mean((np.log(prediction + 1) - np.log(actual + 1)) ** 2))
 
 
 def crossvalidate(data, model, features, test_size=0.3):
-    '''calculates crossvalidation error'''
+    """calculates crossvalidation error"""
     iterations = int(np.floor(1 / test_size))
     nrows = data.shape[0]
     rows = np.array(range(nrows))
@@ -71,11 +72,11 @@ colnames = list(sweaters.columns.values)
 FEATURES = [f for f in colnames if "MODEL" in f]
 
 # define model
-# MODEL = RandomForestRegressor(n_estimators=20, max_depth=2, random_state=0)
-# MODEL = GradientBoostingRegressor()
-MODEL = SGDRegressor()
+MODEL1 = RandomForestRegressor(n_estimators=100, max_depth=2, random_state=0)
+MODEL2 = GradientBoostingRegressor()
+MODEL3 = SGDRegressor()
 
 # magia
-t = crossvalidate(sweaters, MODEL, FEATURES)
-
-print(t)
+for MODEL in (MODEL1, MODEL2, MODEL3):
+    t = crossvalidate(sweaters, MODEL, FEATURES)
+    print(t)
