@@ -46,6 +46,9 @@ sweaters["MODEL_beauty"] = 0
 select = sweaters["category_name"].str.contains("beauty")
 sweaters.loc[select, "MODEL_beauty"] = 1
 
+sweaters["MODEL_makeup"] = 0
+select = sweaters["category_name"].str.contains("makeup")
+sweaters.loc[select, "MODEL_makeup"] = 1
 
 # save new data
 print(sweaters.head())
