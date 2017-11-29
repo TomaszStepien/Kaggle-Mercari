@@ -22,5 +22,17 @@ sweaters = sweaters.rename(index=str, columns={"shipping" : "MODEL_shipping"})
 dm = pd.get_dummies(sweaters.loc[:, "item_condition_id"], dummy_na=True, prefix="MODEL_condition")
 sweaters = pd.concat([sweaters, dm], axis=1)
 
+# make dummies from brand names (counts < threshold go to other)
+sweaters["brand_name_trimmed"] = sweaters["brand_name"]
+counts = sweaters.loc[:, "brand_name"].value_counts()
+brands = counts[counts < 20000].index
+select = sweaters["brand_name_trimmed"].isin(list(brands))
+sweaters.loc[select, "brand_name_trimmed"] = "other"
+
+dm = pd.get_dummies(sweaters.loc[:, "brand_name_trimmed"], dummy_na=True, prefix="MODEL_brand")
+sweaters = pd.concat([sweaters, dm], axis=1)
+
+
 # save new data
+print(sweaters.head())
 sweaters.to_csv("sweaters.tsv", sep="\t", encoding="utf-8")
