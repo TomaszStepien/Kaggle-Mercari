@@ -4,6 +4,9 @@ import os
 from datetime import datetime
 
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.linear_model import SGDRegressor
+
 # from sklearn.metrics import r2_score
 # from scipy.stats import spearmanr, pearsonr
 
@@ -46,11 +49,14 @@ def crossvalidate(data, model, features, test_size=0.3):
     name = "models\\" + str(np.round(e, 6)) + '_' + datetime.now().strftime('%Y_%m_%d_%H_%M_%S') + ".txt"
     info = open(name, mode='w')
     info.write("mean RMSLE: " + str(e) + '\n')
-    info.write("features:\n")
+    info.write("\nfeatures:\n")
     for f in features:
         info.write(f)
         info.write('\n')
-
+    info.write("\nparameters:\n")
+    params = model.get_params()
+    for key in params:
+        info.write(key + ": " + str(params[key]) + "\n")
     info.close()
 
     return e
@@ -60,11 +66,16 @@ def crossvalidate(data, model, features, test_size=0.3):
 os.chdir("C:\\kaggle_mercari")
 sweaters = pd.read_csv("sweaters.tsv", sep="\t")
 
+# select features
 colnames = list(sweaters.columns.values)
 FEATURES = [f for f in colnames if "MODEL" in f]
 
-forest = RandomForestRegressor(n_estimators=100, max_depth=2, random_state=0)
+# define model
+# MODEL = RandomForestRegressor(n_estimators=20, max_depth=2, random_state=0)
+# MODEL = GradientBoostingRegressor()
+MODEL = SGDRegressor()
 
-t = crossvalidate(sweaters, forest, FEATURES)
+# magia
+t = crossvalidate(sweaters, MODEL, FEATURES)
 
 print(t)
