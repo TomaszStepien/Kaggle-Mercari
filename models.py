@@ -3,46 +3,32 @@ import numpy as np
 import os
 from datetime import datetime
 
-
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.linear_model import SGDRegressor
+
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import make_scorer
+
 
 # from sklearn.metrics import r2_score
 # from scipy.stats import spearmanr, pearsonr
 
 
-def error(actual, prediction):
+def RMSLE(actual, prediction):
     """calculates Root Mean Squared Logarithmic Error given 2 vectors"""
     return np.sqrt(np.mean((np.log(prediction + 1) - np.log(actual + 1)) ** 2))
 
 
-def crossvalidate(data, model, features, test_size=0.3):
+RMSLE_erros = make_scorer(RMSLE, greater_is_better=False)
+
+
+def crossvalidate(data, model, features, iterations=3):
     """calculates crossvalidation error"""
-    iterations = int(np.floor(1 / test_size))
-    nrows = data.shape[0]
-    rows = np.array(range(nrows))
-    errors = []
-    for i in range(iterations - 1):
-        r = np.random.choice(rows, int(test_size * nrows), replace=False)
-        rows = np.setdiff1d(rows, r)
-        train = data[~data.index.isin(r)]
-        test = data.iloc[r, ]
 
-        model.fit(train.loc[:, features], train.loc[:, "price"])
-        predicted = model.predict(test.loc[:, features])
-        e = error(test.loc[:, "price"], predicted)
-        errors.append(e)
+    scores = cross_val_score(model, data.loc[:, features], data.loc[:, "price"], cv=iterations, scoring=RMSLE_erros)
 
-    train = data[~data.index.isin(rows)]
-    test = data.iloc[rows, ]
-
-    model.fit(train.loc[:, features], train.loc[:, "price"])
-    predicted = model.predict(test.loc[:, features])
-    e = error(test.loc[:, "price"], predicted)
-    errors.append(e)
-
-    e = np.mean(errors)
+    e = abs(np.mean(scores))
     # save model data to text file
     if "models" not in os.listdir(os.getcwd()):
         os.mkdir("models")
