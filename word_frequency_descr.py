@@ -1,11 +1,11 @@
 import os
 import pandas as pd
-#import numpy as np
 from unidecode import unidecode
 from collections import Counter
 
 # read data - descriptions of the items
 os.chdir("C:\\kaggle_mercari")
+# the file consists of the "item_description" column only
 descriptions = pd.read_csv("descriptions.tsv", sep="\t")
 
 #getting rid of items with no descriptions
@@ -48,7 +48,6 @@ wordlist2 = []
 #renaming the list without stupid words as the original one
 wordlist = wordlist2
 
-
 #counting the words
 word_freq = Counter(wordlist)
 
@@ -62,8 +61,6 @@ dm.columns = ["word","freq"]
 print(dm.head(3))
 
 dm = dm[:200]
-
-print(result.head(25))
 
 #importing the data into csv
 #dm.to_csv("word_frequency.csv", columns = ["word","freq"], index = False)
