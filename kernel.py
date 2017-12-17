@@ -97,3 +97,5 @@ df_test = df_test.rename(columns={'id': 'test_id'})
 
 # saving the output
 df_test[['test_id', 'price']].to_csv('output.csv', index=False)
+
+# TESTTEST
