@@ -3,6 +3,13 @@
 # procedura wrzucania kerneli
 po uruchomieniu kernela na Kagglu updejtujemy tu plik kernel.py z nazwą komita agltorytm + error
 
+# keras
+w cmd wystarcz wpisać
+>> conda update conda
+>> conda update --all
+>> conda install -c conda-forge keras tensorflow
+Ja jeszcze odistalowałem jakieś stare wersje pythona żeby mi nic nie kolidowało 
+
 # competition link
 https://www.kaggle.com/c/mercari-price-suggestion-challenge/team
 
