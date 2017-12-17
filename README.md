@@ -1,5 +1,8 @@
 # Kaggle_Mercari
 
+# procedura wrzucania kerneli
+po uruchomieniu kernela na Kagglu updejtujemy tu plik kernel.py z nazwą komita agltorytm + error
+
 # competition link
 https://www.kaggle.com/c/mercari-price-suggestion-challenge/team
 
