@@ -1,55 +1,82 @@
 import os
 import pandas as pd
+import numpy as np
 
-# read data
-os.chdir("C:\\kaggle_mercari")
-sweaters = pd.read_csv("train.tsv", sep="\t")
+os.chdir("C:\\Kaggle_Mercari")
+
+# define data types
+types = {'train_id': 'int64',
+               'item_condition_id': 'int8',
+               'price': 'float64',
+               'shipping': 'int8'}
+
+train = pd.read_csv('train.tsv', sep='\t', low_memory=True, dtype=types)
+test = pd.read_csv('test.tsv', sep='\t', low_memory=True, dtype=types)
+
+
+# Merging train and test in order to process them together
+
+# changing name of columns train_id and test_id to the same name - id
+train = train.rename(columns={'train_id': 'id'})
+test = test.rename(columns={'test_id': 'id'})
+
+# marking which data comes from train set
+train['is_train'] = 1
+test['is_train'] = 0
+
+# actual merger
+train_test_combined = pd.concat([train.drop(['price'], axis=1), test], axis=0)
 
 # make every text column lowercase because text mining
-sweaters.loc[:, ["name",
-                 "category_name",
-                 "brand_name",
-                 "item_description"]] = sweaters.loc[:,
-                                        ["name",
-                                         "category_name",
-                                         "brand_name",
-                                         "item_description"]].apply(lambda x: x.astype(str).str.lower())
+train_test_combined.loc[:, ["name",
+             "category_name",
+             "brand_name",
+             "item_description"]] = train_test_combined.loc[:,
+                                    ["name",
+                                     "category_name",
+                                     "brand_name",
+                                     "item_description"]].apply(lambda x: x.astype(str).str.lower())
 
-# rename shipping column cause it can go to the model already
-sweaters = sweaters.rename(index=str, columns={"shipping": "MODEL_shipping"})
 
-# make dummy variables from condition id
-dm = pd.get_dummies(sweaters.loc[:, "item_condition_id"], dummy_na=True, prefix="MODEL_condition")
-sweaters = pd.concat([sweaters, dm], axis=1)
+# splitting categories from sth/sth/sth to 3 columns
 
-# make dummies from brand names (counts < threshold go to other)
-sweaters["brand_name_trimmed"] = sweaters["brand_name"]
-counts = sweaters.loc[:, "brand_name"].value_counts()
-brands = counts[counts < 15000].index
-select = sweaters["brand_name_trimmed"].isin(list(brands))
-sweaters.loc[select, "brand_name_trimmed"] = "other"
+def category_name(category):
+    try:
+        category1, category2, category3 = category.split('/')
+        return category1, category2, category3
+    except:
+        return np.nan, np.nan, np.nan
 
-dm = pd.get_dummies(sweaters.loc[:, "brand_name_trimmed"], dummy_na=False, prefix="MODEL_brand")
-sweaters = pd.concat([sweaters, dm], axis=1)
 
-# make dummies from category_name
-sweaters["MODEL_men"] = 0
-select = sweaters["category_name"].str.contains("men")
-sweaters.loc[select, "MODEL_men"] = 1
+train_test_combined['category1'], train_test_combined['category2'], train_test_combined['category3'] = zip(
+    *train_test_combined["category_name"].apply(category_name))
 
-sweaters["MODEL_women"] = 0
-select = sweaters["category_name"].str.contains("women")
-sweaters.loc[select, "MODEL_women"] = 1
-sweaters.loc[select, "MODEL_men"] = 0
+# changing data types from object to category
+train_test_combined.name = train_test_combined.name.astype('category')
+train_test_combined.brand_name = train_test_combined.brand_name.astype('category')
+train_test_combined.category1 = train_test_combined.category1.astype('category')
+train_test_combined.category2 = train_test_combined.category2.astype('category')
+train_test_combined.category3 = train_test_combined.category3.astype('category')
 
-sweaters["MODEL_beauty"] = 0
-select = sweaters["category_name"].str.contains("beauty")
-sweaters.loc[select, "MODEL_beauty"] = 1
+train_test_combined.name = train_test_combined.name.cat.codes
+train_test_combined.brand_name = train_test_combined.brand_name.cat.codes
+train_test_combined.category1 = train_test_combined.category1.cat.codes
+train_test_combined.category2 = train_test_combined.category2.cat.codes
+train_test_combined.category3 = train_test_combined.category3.cat.codes
 
-sweaters["MODEL_makeup"] = 0
-select = sweaters["category_name"].str.contains("makeup")
-sweaters.loc[select, "MODEL_makeup"] = 1
+# dropping unused columns - item_description just for now
+train_test_combined = train_test_combined.drop(['item_description'], axis=1)
+train_test_combined = train_test_combined.drop(['category_name'], axis=1)
 
-# save new data
-print(sweaters.head())
-sweaters.to_csv("sweaters.tsv", sep="\t", encoding="utf-8")
+# splitting train and test data again
+df_train = train_test_combined.loc[train_test_combined['is_train'] == 1]
+df_test = train_test_combined.loc[train_test_combined['is_train'] == 0]
+
+# is_train is no longer needed
+df_train = df_train.drop(['is_train'], axis=1)
+df_test = df_test.drop(['is_train'], axis=1)
+
+# adding price again the train
+df_train['price'] = train.price
+
+df_train.to_csv("df_train.tsv", sep = "\t")
