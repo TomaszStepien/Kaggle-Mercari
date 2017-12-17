@@ -119,7 +119,8 @@ model.fit(X, y)
 # predicting on the test set
 preds = model.predict(df_test)
 df_test['price'] = preds
+df_test['price'] = df_test['price'].apply(lambda x: x if x > 0 else 0)
+df_test = df_test.rename(columns = {'id' : 'test_id'})
 
 # saving the output
-df_test[['id','price']].to_csv('output.csv', index=False)
-
+df_test[['test_id','price']].to_csv('output.csv', index=False)
