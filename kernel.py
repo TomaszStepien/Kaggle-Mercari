@@ -53,15 +53,15 @@ train_test_combined['category1'], train_test_combined['category2'], train_test_c
 # changing data types from object to category
 train_test_combined.name = train_test_combined.name.astype('category')
 train_test_combined.brand_name = train_test_combined.brand_name.astype('category')
-train_test_combined.Category1 = train_test_combined.Category1.astype('category')
-train_test_combined.Category2 = train_test_combined.Category2.astype('category')
-train_test_combined.Category3 = train_test_combined.Category3.astype('category')
+train_test_combined.category1 = train_test_combined.category1.astype('category')
+train_test_combined.category2 = train_test_combined.category2.astype('category')
+train_test_combined.category3 = train_test_combined.category3.astype('category')
 
 train_test_combined.name = train_test_combined.name.cat.codes
 train_test_combined.brand_name = train_test_combined.brand_name.cat.codes
-train_test_combined.Category1 = train_test_combined.Category1.cat.codes
-train_test_combined.Category2 = train_test_combined.Category2.cat.codes
-train_test_combined.Category3 = train_test_combined.Category3.cat.codes
+train_test_combined.category1 = train_test_combined.category1.cat.codes
+train_test_combined.category2 = train_test_combined.category2.cat.codes
+train_test_combined.category3 = train_test_combined.category3.cat.codes
 
 # dropping unused columns - item_description just for now
 train_test_combined = train_test_combined.drop(['item_description'], axis=1)
@@ -78,14 +78,14 @@ df_test = train_test_combined.loc[train_test_combined['is_train'] == 0]
 df_train = df_train.drop(['is_train'], axis=1)
 df_test = df_test.drop(['is_train'], axis=1)
 
-# adding price again the train 
+# adding price again the train
 df_train['price'] = train.price
 
 # Fitting the model
 X = df_train.drop(['price'], axis=1)
 y = df_train.price
 
-model = GradientBoostingRegressor(n_estimators=150, max_depth=4)
+model = GradientBoostingRegressor(n_estimators=500, max_depth=4, loss='lad')
 
 model.fit(X, y)
 
@@ -97,5 +97,3 @@ df_test = df_test.rename(columns={'id': 'test_id'})
 
 # saving the output
 df_test[['test_id', 'price']].to_csv('output.csv', index=False)
-
-# TESTTEST
