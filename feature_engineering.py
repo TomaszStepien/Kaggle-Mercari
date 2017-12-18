@@ -1,3 +1,7 @@
+"""
+in this file we prepare data for building models
+"""
+
 import os
 import pandas as pd
 import numpy as np
@@ -5,13 +9,18 @@ import numpy as np
 os.chdir("C:\\Kaggle_Mercari")
 
 # define data types
-types = {'train_id': 'int64',
+types_train = {'train_id': 'int64',
                'item_condition_id': 'int8',
                'price': 'float64',
                'shipping': 'int8'}
 
-train = pd.read_csv('train.tsv', sep='\t', low_memory=True, dtype=types)
-test = pd.read_csv('test.tsv', sep='\t', low_memory=True, dtype=types)
+types_test = {'test_id': 'int64',
+               'item_condition_id': 'int8',
+               'price': 'float64',
+               'shipping': 'int8'}
+
+train = pd.read_csv('train.tsv', sep='\t', low_memory=True, dtype=types_train)
+test = pd.read_csv('test.tsv', sep='\t', low_memory=True, dtype=types_test)
 
 
 # Merging train and test in order to process them together

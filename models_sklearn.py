@@ -1,54 +1,12 @@
-import pandas as pd
-import numpy as np
 import os
-from datetime import datetime
 
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import classification_report
-
+import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
-
-from sklearn.model_selection import cross_val_score
+from sklearn.metrics import classification_report
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import make_scorer
 
-
-def RMSLE(actual, prediction):
-    """calculates Root Mean Squared Logarithmic Error given 2 vectors"""
-    return np.sqrt(np.mean((np.log(prediction + 1) - np.log(actual + 1)) ** 2))
-
-
-RMSLE_errors = make_scorer(RMSLE, greater_is_better=False)
-
-
-def crossvalidate(data, model, iterations=3):
-    """calculates crossvalidation error"""
-
-    scores = cross_val_score(model,
-                             data.drop(['price'], axis=1),
-                             data.price, cv=iterations,
-                             scoring=RMSLE_errors)
-
-    e = abs(np.mean(scores))
-    # save model data to text file
-    if "models" not in os.listdir(os.getcwd()):
-        os.mkdir("models")
-
-    name = "models\\" + str(np.round(e, 6)) + '_' + datetime.now().strftime('%Y_%m_%d_%H_%M_%S') + ".txt"
-    info = open(name, mode='w')
-    info.write("mean RMSLE: " + str(e) + '\n')
-    info.write("\nfeatures:\n")
-    for f in list(data.columns.values):
-        info.write(f)
-        info.write('\n')
-    info.write("\nparameters:\n")
-    params = model.get_params()
-    for key in params:
-        info.write(key + ": " + str(params[key]) + "\n")
-    info.close()
-
-    return e
-
+from Kaggle_Mercari.functions import rmsle_scorer
 
 # read data
 os.chdir("C:\\kaggle_mercari")
@@ -63,7 +21,7 @@ print("model set up")
 # t = crossvalidate(sweaters, MODEL)
 # print("Error: ", t)
 
-# PARAMETER TUNING
+# PARAMETER TUNING - gridsearch
 
 # Split the dataset in two equal parts
 X_train, X_test, y_train, y_test = train_test_split(
@@ -80,7 +38,7 @@ tuned_parameters = [{'loss': ['ls'],
 print("# Tuning hyper-parameters for RMSLE")
 
 clf = GridSearchCV(GradientBoostingRegressor(), tuned_parameters, cv=5,
-                   scoring=RMSLE_errors)
+                   scoring=rmsle_scorer)
 clf.fit(X_train, y_train)
 
 print("Best parameters set found on development set:")

@@ -1,18 +1,22 @@
 import numpy as np
 import pandas as pd
-# from sklearn.ensemble import RandomForestRegressor
-# from sklearn.linear_model import SGDRegressor
+
 from sklearn.ensemble import GradientBoostingRegressor
 
 # define data types
-types = {'train_id': 'int64',
-         'item_condition_id': 'int8',
-         'price': 'float64',
-         'shipping': 'int8'}
+types_train = {'train_id': 'int64',
+               'item_condition_id': 'int8',
+               'price': 'float64',
+               'shipping': 'int8'}
+
+types_test = {'test_id': 'int64',
+              'item_condition_id': 'int8',
+              'price': 'float64',
+              'shipping': 'int8'}
 
 # read data
-train = pd.read_csv('../input/train.tsv', sep='\t', low_memory=True, dtype=types)
-test = pd.read_csv('../input/test.tsv', sep='\t', low_memory=True, dtype=types)
+train = pd.read_csv('../input/train.tsv', sep='\t', low_memory=True, dtype=types_train)
+test = pd.read_csv('../input/test.tsv', sep='\t', low_memory=True, dtype=types_test)
 
 # Merging train and test in order to process them together
 
@@ -38,8 +42,9 @@ train_test_combined.loc[:, ["name",
                                                     "item_description"]].apply(lambda x: x.astype(str).str.lower())
 
 
-# splitting categories from sth/sth/sth to 3 columns
+#
 def category_name(category):
+    """splits categories from sth/sth/sth to 3 columns"""
     try:
         category1, category2, category3 = category.split('/')
         return category1, category2, category3
@@ -82,7 +87,7 @@ df_test = df_test.drop(['is_train'], axis=1)
 df_train['price'] = train.price
 
 # Fitting the model
-X = df_train.drop(['price'], axis=1)
+X = df_train.drop(['price', 'id'], axis=1)
 y = df_train.price
 
 model = GradientBoostingRegressor(n_estimators=500, max_depth=4, loss='lad')
@@ -90,7 +95,7 @@ model = GradientBoostingRegressor(n_estimators=500, max_depth=4, loss='lad')
 model.fit(X, y)
 
 # predicting on the test set
-preds = model.predict(df_test)
+preds = model.predict(df_test.drop(['id'], axis=1))
 df_test['price'] = preds
 df_test['price'] = df_test['price'].apply(lambda x: x if x > 0 else 0)
 df_test = df_test.rename(columns={'id': 'test_id'})

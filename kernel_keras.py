@@ -95,7 +95,6 @@ model.add(Dense(units=64, activation='relu', input_dim=7))
 model.add(Dense(units=128, activation='relu'))
 model.add(Dense(units=1, activation='softmax'))
 
-
 model.compile(loss='mean_squared_error',
               optimizer='adam')
 
