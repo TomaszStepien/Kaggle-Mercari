@@ -40,17 +40,23 @@ train_test_combined.loc[:, ["name",
                                                     "item_description"]].apply(lambda x: x.astype(str).str.lower())
 
 
-# splitting categories from sth/sth/sth to 3 columns
-def category_name(category):
+def split_column(column):
+    """
+    splits a column based on '/'
+
+    :param column: column to be separated
+    :return: a tuple of columns
+    """
+
     try:
-        category1, category2, category3 = category.split('/')
-        return category1, category2, category3
+        new_column1, new_column2, new_column3 = column.split('/')
+        return new_column1, new_column2, new_column3
     except:
         return np.nan, np.nan, np.nan
 
 
 train_test_combined['category1'], train_test_combined['category2'], train_test_combined['category3'] = zip(
-    *train_test_combined["category_name"].apply(category_name))
+    *train_test_combined["category_name"].apply(split_column))
 
 # changing data types from object to category
 train_test_combined.name = train_test_combined.name.astype('category')

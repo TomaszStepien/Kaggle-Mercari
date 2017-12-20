@@ -3,8 +3,10 @@ in this file we prepare data for building models
 """
 
 import os
+
 import pandas as pd
-import numpy as np
+
+from Kaggle_Mercari.functions import split_column
 
 os.chdir("C:\\Kaggle_Mercari")
 
@@ -15,13 +17,12 @@ types_train = {'train_id': 'int64',
                'shipping': 'int8'}
 
 types_test = {'test_id': 'int64',
-               'item_condition_id': 'int8',
-               'price': 'float64',
-               'shipping': 'int8'}
+              'item_condition_id': 'int8',
+              'price': 'float64',
+              'shipping': 'int8'}
 
 train = pd.read_csv('train.tsv', sep='\t', low_memory=True, dtype=types_train)
 test = pd.read_csv('test.tsv', sep='\t', low_memory=True, dtype=types_test)
-
 
 # Merging train and test in order to process them together
 
@@ -38,27 +39,17 @@ train_test_combined = pd.concat([train.drop(['price'], axis=1), test], axis=0)
 
 # make every text column lowercase because text mining
 train_test_combined.loc[:, ["name",
-             "category_name",
-             "brand_name",
-             "item_description"]] = train_test_combined.loc[:,
-                                    ["name",
-                                     "category_name",
-                                     "brand_name",
-                                     "item_description"]].apply(lambda x: x.astype(str).str.lower())
+                            "category_name",
+                            "brand_name",
+                            "item_description"]] = train_test_combined.loc[:,
+                                                   ["name",
+                                                    "category_name",
+                                                    "brand_name",
+                                                    "item_description"]].apply(lambda x: x.astype(str).str.lower())
 
-
-# splitting categories from sth/sth/sth to 3 columns
-
-def category_name(category):
-    try:
-        category1, category2, category3 = category.split('/')
-        return category1, category2, category3
-    except:
-        return np.nan, np.nan, np.nan
-
-
+# splitting categories into 3
 train_test_combined['category1'], train_test_combined['category2'], train_test_combined['category3'] = zip(
-    *train_test_combined["category_name"].apply(category_name))
+    *train_test_combined["category_name"].apply(split_column))
 
 # changing data types from object to category
 train_test_combined.name = train_test_combined.name.astype('category')
@@ -87,5 +78,5 @@ df_test = df_test.drop(['is_train'], axis=1)
 
 # adding price again the train
 df_train['price'] = train.price
-
-df_train.to_csv("df_train.tsv", sep = "\t")
+print(df_train.head())
+df_train.to_csv("df_train.tsv", sep="\t")

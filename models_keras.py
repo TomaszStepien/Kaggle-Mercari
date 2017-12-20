@@ -23,4 +23,3 @@ model.compile(loss='mean_squared_error',
               optimizer='adam')
 
 model.fit(X_train.values, y_train.values, epochs=5, batch_size=32)
-

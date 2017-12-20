@@ -8,10 +8,10 @@ from sklearn.model_selection import train_test_split
 
 from Kaggle_Mercari.functions import rmsle_scorer
 
-# read data
+# load data
 os.chdir("C:\\kaggle_mercari")
 sweaters = pd.read_csv("df_train.tsv", sep="\t")
-print("data read")
+print("data loaded")
 
 # set up model
 MODEL = GradientBoostingRegressor()
