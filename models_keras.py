@@ -1,25 +1,31 @@
-from keras.models import Sequential
-from keras.layers import Dense
 import os
+
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from keras.layers import Dense
+from keras.models import Sequential
+from keras.wrappers.scikit_learn import KerasRegressor
+
+from Kaggle_Mercari.functions import crossvalidate
 
 # read data
 os.chdir("C:\\kaggle_mercari")
 sweaters = pd.read_csv("df_train.tsv", sep="\t")
 print("data read")
 
-X_train, X_test, y_train, y_test = train_test_split(
-    sweaters.drop(['price'], axis=1), sweaters.price, test_size=0.4, random_state=0)
 
-model = Sequential()
+def baseline_model():
+    model = Sequential()
+    model.add(Dense(units=64, activation='relu', input_dim=sweaters.shape[1] - 2))
+    model.add(Dense(units=1, activation='softmax'))
+    model.compile(loss='mean_squared_error',
+                  optimizer='adam')
+    return model
 
-model.add(Dense(units=64, activation='relu', input_dim=7))
-model.add(Dense(units=128, activation='relu'))
-model.add(Dense(units=1, activation='softmax'))
 
+b_m = baseline_model()
+# b_m.fit(sweaters.drop(['price', 'id'], axis=1).values, sweaters.price.values, batch_size=32, epochs=5, verbose=False)
+print("model compiled")
 
-model.compile(loss='mean_squared_error',
-              optimizer='adam')
+scikit_keras = KerasRegressor(build_fn=baseline_model, epochs=1, batch_size=32, verbose=False)
 
-model.fit(X_train.values, y_train.values, epochs=5, batch_size=32)
+print(crossvalidate(sweaters, scikit_keras, 3))

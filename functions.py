@@ -34,8 +34,9 @@ def crossvalidate(data, model, n=3):
     """
 
     scores = cross_val_score(model,
-                             data.drop(['price'], axis=1),
-                             data.price, cv=n,
+                             data.drop(['price', 'id'], axis=1).values,
+                             data.price.values,
+                             cv=n,
                              scoring=rmsle_scorer)
     e = abs(np.mean(scores))
 
