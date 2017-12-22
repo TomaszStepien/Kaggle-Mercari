@@ -9,21 +9,25 @@ from keras.preprocessing.text import Tokenizer
 from sklearn.preprocessing import LabelEncoder
 
 # define data types
-types = {'train_id': 'int64',
-         'item_condition_id': 'int8',
-         'price': 'float64',
-         'shipping': 'int8'}
+types_train = {'train_id': 'int64',
+               'item_condition_id': 'int8',
+               'price': 'float64',
+               'shipping': 'int8'}
+
+types_test = {'test_id': 'int64',
+              'item_condition_id': 'int8',
+              'price': 'float64',
+              'shipping': 'int8'}
 
 # read data
-train = pd.read_csv('../input/train.tsv', sep='\t', low_memory=True, dtype=types)
-test = pd.read_csv('../input/test.tsv', sep='\t', low_memory=True, dtype=types)
+train = pd.read_csv('../input/train.tsv', sep='\t', low_memory=True, dtype=types_train)
+test = pd.read_csv('../input/test.tsv', sep='\t', low_memory=True, dtype=types_test)
 
 train['target'] = np.log1p(train['price'])
-# In[ ]:
 
 
 # HANDLE MISSING VALUES
-print("Handling missing values...")
+# print("Handling missing values...")
 
 
 def handle_missing(dataset):
@@ -35,12 +39,10 @@ def handle_missing(dataset):
 
 train = handle_missing(train)
 test = handle_missing(test)
-print(train.shape)
-print(test.shape)
 
 # PROCESS CATEGORICAL DATA
 
-print("Handling categorical variables...")
+# print("Handling categorical variables...")
 le = LabelEncoder()
 
 le.fit(np.hstack([train.category_name, test.category_name]))
@@ -53,8 +55,8 @@ test['brand'] = le.transform(test.brand_name)
 del le, train['brand_name'], test['brand_name']
 
 # PROCESS TEXT: RAW
-print("Text to seq process...")
-print("   Fitting tokenizer...")
+# print("Text to seq process...")
+# print("   Fitting tokenizer...")
 
 raw_text = np.hstack([train.category_name.str.lower(),
                       train.item_description.str.lower(),
@@ -69,7 +71,7 @@ train["seq_item_description"] = tok_raw.texts_to_sequences(train.item_descriptio
 test["seq_item_description"] = tok_raw.texts_to_sequences(test.item_description.str.lower())
 train["seq_name"] = tok_raw.texts_to_sequences(train.name.str.lower())
 test["seq_name"] = tok_raw.texts_to_sequences(test.name.str.lower())
-train.head(3)
+# print(train.head(3))
 
 # EMBEDDINGS MAX VALUE
 MAX_NAME_SEQ = 20  # 17
@@ -88,8 +90,6 @@ MAX_CONDITION = np.max([train.item_condition_id.max(),
 
 
 # KERAS DATA DEFINITION
-
-
 def get_keras_data(dataset):
     x = {
         'name': pad_sequences(dataset.seq_name, maxlen=MAX_NAME_SEQ),
@@ -109,8 +109,6 @@ X_train = get_keras_data(train)
 X_test = get_keras_data(test)
 
 # KERAS MODEL DEFINITION
-
-
 dr = 0.25
 
 
@@ -129,7 +127,7 @@ def get_model():
     num_vars = Input(shape=[X_train["num_vars"].shape[1]], name="num_vars")
 
     # Embeddings layers
-    emb_size = 60
+    emb_size = 30
 
     emb_name = Embedding(MAX_TEXT, emb_size // 3)(name)
     emb_item_desc = Embedding(MAX_TEXT, emb_size)(item_desc)
@@ -152,8 +150,8 @@ def get_model():
         rnn_layer3,
         num_vars
     ])
-    # main_l = Dropout(dr_r)(Dense(128)(main_l))
-    main_l = Dropout(dr_r)(Dense(32)(main_l))
+    main_l = Dropout(dr_r)(Dense(64)(main_l))
+    main_l = Dropout(dr_r)(Dense(16)(main_l))
 
     # output
     output = Dense(1, activation="linear")(main_l)
@@ -178,6 +176,7 @@ def exp_decay(init, fin, steps):
     return (init / fin) ** (1 / (steps - 1)) - 1
 
 
+# print("fitting...")
 # FITTING THE MODEL
 epochs = 1
 BATCH_SIZE = 512 * 3
@@ -198,6 +197,6 @@ history = model.fit(X_train, train.target,
 # CREATE PREDICTIONS
 preds = model.predict(X_test)
 preds = np.expm1(preds)
-X_test['price'] = preds
+test['price'] = preds
 
-X_test[['test_id', 'price']].to_csv('output.csv', index=False)
+test[['test_id', 'price']].to_csv('output.csv', index=False)
