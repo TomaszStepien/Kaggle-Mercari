@@ -64,7 +64,7 @@ raw_text = np.hstack([train.category_name.str.lower(),
 
 tok_raw = Tokenizer()
 tok_raw.fit_on_texts(raw_text)
-print("   Transforming text to seq...")
+# print("   Transforming text to seq...")
 train["seq_category_name"] = tok_raw.texts_to_sequences(train.category_name.str.lower())
 test["seq_category_name"] = tok_raw.texts_to_sequences(test.category_name.str.lower())
 train["seq_item_description"] = tok_raw.texts_to_sequences(train.item_description.str.lower())
@@ -150,8 +150,9 @@ def get_model():
         rnn_layer3,
         num_vars
     ])
+    main_l = Dropout(dr_r)(Dense(128)(main_l))
     main_l = Dropout(dr_r)(Dense(64)(main_l))
-    main_l = Dropout(dr_r)(Dense(16)(main_l))
+    main_l = Dropout(dr_r)(Dense(32)(main_l))
 
     # output
     output = Dense(1, activation="linear")(main_l)
@@ -178,8 +179,8 @@ def exp_decay(init, fin, steps):
 
 # print("fitting...")
 # FITTING THE MODEL
-epochs = 1
-BATCH_SIZE = 512 * 3
+epochs = 2
+BATCH_SIZE = 512 * 2
 steps = int(len(X_train['name']) / BATCH_SIZE) * epochs
 lr_init, lr_fin = 0.013, 0.009
 lr_decay = exp_decay(lr_init, lr_fin, steps)
