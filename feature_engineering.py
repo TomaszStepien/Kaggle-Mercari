@@ -5,8 +5,9 @@ in this file we prepare data for building models
 import os
 
 import pandas as pd
+import numpy as np
 
-from Kaggle_Mercari.functions import split_column
+from Kaggle_Mercari.functions import split_column, handle_missing
 
 os.chdir("C:\\Kaggle_Mercari")
 
@@ -51,6 +52,8 @@ train_test_combined.loc[:, ["name",
 train_test_combined['category1'], train_test_combined['category2'], train_test_combined['category3'] = zip(
     *train_test_combined["category_name"].apply(split_column))
 
+train_test_combined = handle_missing(train_test_combined)
+
 # changing data types from object to category
 train_test_combined.name = train_test_combined.name.astype('category')
 train_test_combined.brand_name = train_test_combined.brand_name.astype('category')
@@ -78,5 +81,6 @@ df_test = df_test.drop(['is_train'], axis=1)
 
 # adding price again the train
 df_train['price'] = train.price
-print(df_train.head())
+df_train.price = np.log(df_train.price + 1)
+print(df_train.head(20))
 df_train.to_csv("df_train.tsv", sep="\t")

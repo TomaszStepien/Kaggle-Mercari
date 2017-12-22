@@ -3,8 +3,6 @@ import pandas as pd
 from keras.layers import Dense
 from keras.models import Sequential
 
-# from sklearn.ensemble import RandomForestRegressor
-# from sklearn.linear_model import SGDRegressor
 
 # define data types
 types = {'train_id': 'int64',
@@ -51,7 +49,7 @@ def split_column(column):
     try:
         new_column1, new_column2, new_column3 = column.split('/')
         return new_column1, new_column2, new_column3
-    except:
+    except Exception:
         return np.nan, np.nan, np.nan
 
 
@@ -91,23 +89,28 @@ df_train['price'] = train.price
 
 # Fitting the model
 X = df_train.drop(['price', 'id'], axis=1)
-y = df_train.price
+y = np.log(df_train.price + 1)
 
 print(X.head())
 
 model = Sequential()
-
-model.add(Dense(units=64, activation='relu', input_dim=7))
-model.add(Dense(units=128, activation='relu'))
-model.add(Dense(units=1, activation='softmax'))
-
+model.add(Dense(units=7, activation='tanh', input_dim=7))
+model.add(Dense(units=14, activation='relu'))
+model.add(Dense(units=28, activation='relu'))
+model.add(Dense(units=56, activation='relu'))
+model.add(Dense(units=112, activation='relu'))
+model.add(Dense(units=56, activation='relu'))
+model.add(Dense(units=28, activation='relu'))
+model.add(Dense(units=14, activation='relu'))
+model.add(Dense(units=7, activation='relu'))
+model.add(Dense(units=1, activation='linear'))
 model.compile(loss='mean_squared_error',
               optimizer='adam')
 
-model.fit(X.values, y.values, epochs=5, batch_size=32, verbose=False)
+model.fit(X.values, y.values, epochs=16, batch_size=256, verbose=False)
 
 # predicting on the test set
-preds = model.predict(df_test.drop(['id'], axis=1))
+preds = np.exp(model.predict(df_test.drop(['id'], axis=1)))-1
 df_test['price'] = preds
 df_test['price'] = df_test['price'].apply(lambda x: x if x > 0 else 0)
 df_test = df_test.rename(columns={'id': 'test_id'})
