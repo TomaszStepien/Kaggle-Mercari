@@ -28,7 +28,7 @@ def rmse(actual, prediction):
     calculates Root Mean Squared Error
 
     :param actual: vector containing actual log(prices + 1)
-    :param prediction: vector containg predicted prices
+    :param prediction: vector containg predicted log(prices + 1)
     """
     return np.sqrt(np.mean((prediction - actual) ** 2))
 
